@@ -9,7 +9,7 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-import { BrandMark } from "./brand-mark";
+import { BrandMark } from "../../../components/brand-mark";
 import { cn } from "@/lib/utils";
 import {
   Code2,

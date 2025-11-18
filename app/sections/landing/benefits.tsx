@@ -3,7 +3,7 @@ import { Sparkles, ArrowRight } from "lucide-react";
 import { AnimatedReveal } from "@/components/animated-reveal";
 import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { BrandMark } from "./brand-mark";
+import { BrandMark } from "../../../components/brand-mark";
 
 const benefits = [
   "Equipo experto con años de experiencia en tecnología y marketing",

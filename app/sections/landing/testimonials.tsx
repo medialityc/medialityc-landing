@@ -2,7 +2,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Star, Quote } from "lucide-react";
 import { AnimatedReveal } from "@/components/animated-reveal";
-import { BrandMark } from "./brand-mark";
+import { BrandMark } from "../../../components/brand-mark";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   Carousel,

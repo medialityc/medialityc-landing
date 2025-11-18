@@ -87,9 +87,9 @@ export const ColoredLogo = (props: React.SVGProps<SVGSVGElement>) => {
           y2="275.09"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stop-color="#2A2764" />
-          <stop offset="0.64" stop-color="#00A79D" />
-          <stop offset="1" stop-color="#2699D5" />
+          <stop stopColor="#2A2764" />
+          <stop offset="0.64" stopColor="#00A79D" />
+          <stop offset="1" stopColor="#2699D5" />
         </linearGradient>
         <linearGradient
           id="paint1_linear_19_668"
@@ -99,9 +99,9 @@ export const ColoredLogo = (props: React.SVGProps<SVGSVGElement>) => {
           y2="142.24"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stop-color="#2A2764" />
-          <stop offset="0.64" stop-color="#00A79D" />
-          <stop offset="1" stop-color="#2699D5" />
+          <stop stopColor="#2A2764" />
+          <stop offset="0.64" stopColor="#00A79D" />
+          <stop offset="1" stopColor="#2699D5" />
         </linearGradient>
         <linearGradient
           id="paint2_linear_19_668"
@@ -111,9 +111,9 @@ export const ColoredLogo = (props: React.SVGProps<SVGSVGElement>) => {
           y2="274.93"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stop-color="#2A2764" />
-          <stop offset="0.64" stop-color="#00A79D" />
-          <stop offset="1" stop-color="#2699D5" />
+          <stop stopColor="#2A2764" />
+          <stop offset="0.64" stopColor="#00A79D" />
+          <stop offset="1" stopColor="#2699D5" />
         </linearGradient>
         <linearGradient
           id="paint3_linear_19_668"
@@ -123,9 +123,9 @@ export const ColoredLogo = (props: React.SVGProps<SVGSVGElement>) => {
           y2="142.24"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stop-color="#2A2764" />
-          <stop offset="0.64" stop-color="#00A79D" />
-          <stop offset="1" stop-color="#2699D5" />
+          <stop stopColor="#2A2764" />
+          <stop offset="0.64" stopColor="#00A79D" />
+          <stop offset="1" stopColor="#2699D5" />
         </linearGradient>
         <linearGradient
           id="paint4_linear_19_668"
@@ -135,9 +135,9 @@ export const ColoredLogo = (props: React.SVGProps<SVGSVGElement>) => {
           y2="246.92"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stop-color="#2A2764" />
-          <stop offset="0.64" stop-color="#00A79D" />
-          <stop offset="1" stop-color="#2699D5" />
+          <stop stopColor="#2A2764" />
+          <stop offset="0.64" stopColor="#00A79D" />
+          <stop offset="1" stopColor="#2699D5" />
         </linearGradient>
         <linearGradient
           id="paint5_linear_19_668"
@@ -147,9 +147,9 @@ export const ColoredLogo = (props: React.SVGProps<SVGSVGElement>) => {
           y2="400.57"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stop-color="#2A2764" />
-          <stop offset="0.64" stop-color="#00A79D" />
-          <stop offset="1" stop-color="#2699D5" />
+          <stop stopColor="#2A2764" />
+          <stop offset="0.64" stopColor="#00A79D" />
+          <stop offset="1" stopColor="#2699D5" />
         </linearGradient>
         <linearGradient
           id="paint6_linear_19_668"
@@ -159,9 +159,9 @@ export const ColoredLogo = (props: React.SVGProps<SVGSVGElement>) => {
           y2="432.92"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stop-color="#2A2764" />
-          <stop offset="0.64" stop-color="#00A79D" />
-          <stop offset="1" stop-color="#2699D5" />
+          <stop stopColor="#2A2764" />
+          <stop offset="0.64" stopColor="#00A79D" />
+          <stop offset="1" stopColor="#2699D5" />
         </linearGradient>
         <linearGradient
           id="paint7_linear_19_668"
@@ -171,9 +171,9 @@ export const ColoredLogo = (props: React.SVGProps<SVGSVGElement>) => {
           y2="465.83"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stop-color="#2A2764" />
-          <stop offset="0.64" stop-color="#00A79D" />
-          <stop offset="1" stop-color="#2699D5" />
+          <stop stopColor="#2A2764" />
+          <stop offset="0.64" stopColor="#00A79D" />
+          <stop offset="1" stopColor="#2699D5" />
         </linearGradient>
       </defs>
     </svg>

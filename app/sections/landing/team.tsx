@@ -20,9 +20,8 @@ import { equipo, obtenerIniciales } from "@/lib/equipo";
 const fallbackImg = "/team/fallback-avatar.svg";
 
 // Mantener la exportación para compatibilidad pero ahora delega al carrusel.
-import { TeamCarousel } from "./team-carousel";
+import { TeamCarousel } from "../../../components/team-carousel";
 
 export const TeamSection = () => {
   return <TeamCarousel />;
 };
-

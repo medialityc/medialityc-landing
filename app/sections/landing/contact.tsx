@@ -15,7 +15,7 @@ import {
 import { Mail, Phone, MapPin, Sparkles, Send } from "lucide-react";
 import { useState } from "react";
 import { AnimatedReveal } from "@/components/animated-reveal";
-import { BrandMark } from "./brand-mark";
+import { BrandMark } from "../../../components/brand-mark";
 
 export function ContactSection() {
   const [formData, setFormData] = useState({

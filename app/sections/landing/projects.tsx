@@ -62,7 +62,6 @@ export function ProjectsSection() {
             producto, detalle y rendimiento.
           </p>
         </AnimatedReveal>
-        <BrandMark variant="divider" />
         <AnimatedReveal delay={0.1} distance={40} className="flex">
           <ProjectItem
             meta={featuredProjects[current]}
@@ -107,6 +106,41 @@ function ProjectItem({
   return (
     <div className="flex flex-col items-center gap-5 w-full">
       <div className="relative w-full mx-auto aspect-4/3 lg:max-w-full sm:max-w-[460px]">
+        {/* Indicador de elemento 3D interactivo */}
+        <div
+          className="absolute left-2 top-2 z-10 flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-mono tracking-[0.18em] backdrop-blur-md bg-white/5 bg-linear-to-r from-primary/40 via-secondary/30 to-accent/20 border border-white/10 ring-1 ring-primary/30 shadow-[0_4px_14px_-4px_rgba(0,0,0,0.55)] text-primary/90 pointer-events-none select-none"
+          aria-label="Vista 3D interactiva"
+        >
+          <svg
+            className="size-3.5 text-primary"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path
+              d="M12 3 4.5 7v10L12 21l7.5-4V7L12 3Z"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinejoin="round"
+              fill="none"
+            />
+            <path
+              d="M12 3v18"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+            <path
+              d="M4.5 7 12 13.5 19.5 7"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <span className="font-semibold">3D</span>
+        </div>
         <LaptopComponente
           scale={scale}
           screenWidth={screenWidth}

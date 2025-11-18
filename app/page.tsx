@@ -1,32 +1,26 @@
 "use client";
-
-import { BenefitsSection } from "@/components/benefits";
-import { ContactSection } from "@/components/contact";
+import { BenefitsSection } from "@/app/sections/landing/benefits";
+import { ContactSection } from "@/app/sections/landing/contact";
 import { GL } from "@/components/gl";
-import GLNodes from "@/components/gl/nodes-network";
-import { Hero } from "@/components/hero";
-import { TeamSection } from "@/components/team";
-import { ProjectsSection } from "@/components/projects";
-import { ServicesSection } from "@/components/services";
-import { TestimonialsSection } from "@/components/testimonials";
+import { Hero } from "@/app/sections/landing/hero";
+import { TeamSection } from "@/app/sections/landing/team";
+import { ProjectsSection } from "@/app/sections/landing/projects";
+import { ServicesSection } from "@/app/sections/landing/services";
+import { TestimonialsSection } from "@/app/sections/landing/testimonials";
 import { Leva } from "leva";
-import LaptopComponente from "@/components/gl/laptop-componente";
 
 export default function Home() {
   return (
     <>
       <GL />
-      {/* Componente 3D opcional: <LaptopComponente /> */}
-      {/* <GLNodes /> */}
       <Hero />
       <ServicesSection />
       <BenefitsSection />
-  <ProjectsSection />
+      <ProjectsSection />
       <TeamSection />
       <TestimonialsSection />
       <ContactSection />
-  {/* Instancia aislada del laptop eliminada para evitar render duplicado. */}
-      <Leva hidden />
+      <Leva collapsed />
     </>
   );
 }
