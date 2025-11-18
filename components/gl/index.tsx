@@ -29,10 +29,10 @@ export const GL = () => {
     scrollCamStrength,
     scrollCamDepth,
   } = useControls("Partículas", {
-    noiseBase: { value: 0.5, min: 0, max: 2, step: 0.01 }, // Intensidad base
+    noiseBase: { value: 1.1, min: 0, max: 2, step: 0.01 }, // Intensidad base
     noiseScale: { value: 0.6, min: 0.1, max: 5, step: 0.1 }, // Escala de ruido
     scrollBoost: { value: 0.8, min: 0, max: 3, step: 0.01 }, // Cuánto amplifica el scroll
-    pointSize: { value: 6.0, min: 0.5, max: 15, step: 0.1 },
+    pointSize: { value: 15.0, min: 0.5, max: 15, step: 0.1 },
     opacity: { value: 0.85, min: 0, max: 1, step: 0.01 },
     planeScale: { value: 8.0, min: 0.5, max: 15, step: 0.1 },
     size: { value: 512, options: [256, 512, 1024] },
