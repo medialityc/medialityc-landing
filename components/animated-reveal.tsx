@@ -26,13 +26,16 @@ export function AnimatedReveal<T extends React.ElementType = "div">({
     <div
       ref={ref as any}
       className={cn(
-        "transition-all duration-700 ease-out will-change-transform",
+        "transition-all duration-700 ease-out will-change-transform motion-reduce:transition-none",
         inView ? "opacity-100" : "opacity-0",
         className
       )}
       style={{
         transitionDelay: `${delay}s`,
-        transform: inView ? "translateY(0)" : `translateY(${distance}px)`,
+        transform: inView
+          ? "translateY(0) scale(1)"
+          : `translateY(${distance}px) scale(0.97)`,
+        filter: inView ? "blur(0px)" : "blur(6px)",
       }}
     >
       {children}

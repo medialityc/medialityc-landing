@@ -92,6 +92,7 @@ export function TestimonialsSection() {
     >
       <div className="container">
         <SectionHeading
+          parallax={0.05}
           eyebrow="Testimonios"
           title={
             <span id="testimonials-heading">Lo que dicen nuestros clientes</span>

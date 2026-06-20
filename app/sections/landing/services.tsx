@@ -104,6 +104,7 @@ export function ServicesSection() {
     >
       <div className="container">
         <SectionHeading
+          parallax={0.05}
           eyebrow="Lo que hacemos"
           title={
             <span id="services-heading">

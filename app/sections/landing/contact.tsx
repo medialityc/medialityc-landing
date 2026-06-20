@@ -52,6 +52,7 @@ export function ContactSection() {
     >
       <div className="container">
         <SectionHeading
+          parallax={0.05}
           eyebrow="Contacto"
           title={
             <span id="contact-heading">

@@ -33,9 +33,11 @@ export function TechBackground() {
     let nodes: { x: number; y: number; vx: number; vy: number }[] = [];
 
     const ACCENT = { r: 117, g: 233, b: 240 }; // brand aqua (#75e9f0)
+    const ACCENT2 = { r: 129, g: 140, b: 248 }; // indigo (#818cf8) al final del scroll
     const LINK_DIST = 140; // distancia máx. para dibujar enlaces
     const MOUSE_DIST = 170;
     const mouse = { x: -9999, y: -9999, active: false };
+    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
     function resize() {
       // Fallback a las dimensiones de la ventana si el layout aún no reporta
@@ -59,19 +61,34 @@ export function TechBackground() {
     function draw() {
       ctx!.clearRect(0, 0, width, height);
 
+      // Progreso de scroll de toda la página (0..1) para la reactividad.
+      const maxScroll =
+        document.documentElement.scrollHeight - window.innerHeight;
+      const sp = maxScroll > 0 ? Math.min(window.scrollY / maxScroll, 1) : 0;
+      if (!prefersReduced) {
+        document.documentElement.style.setProperty("--sp", sp.toFixed(3));
+      }
+
+      // El scroll desplaza el tono (aqua -> indigo), acelera y alarga enlaces.
+      const cr = Math.round(lerp(ACCENT.r, ACCENT2.r, sp));
+      const cg = Math.round(lerp(ACCENT.g, ACCENT2.g, sp));
+      const cb = Math.round(lerp(ACCENT.b, ACCENT2.b, sp));
+      const speedFactor = 1 + sp * 1.6;
+      const linkDist = LINK_DIST * (1 + sp * 0.35);
+
       // Mover y dibujar nodos
       for (let i = 0; i < nodes.length; i++) {
         const n = nodes[i];
         if (!prefersReduced) {
-          n.x += n.vx;
-          n.y += n.vy;
+          n.x += n.vx * speedFactor;
+          n.y += n.vy * speedFactor;
           if (n.x < 0 || n.x > width) n.vx *= -1;
           if (n.y < 0 || n.y > height) n.vy *= -1;
         }
 
         ctx!.beginPath();
         ctx!.arc(n.x, n.y, 1.4, 0, Math.PI * 2);
-        ctx!.fillStyle = `rgba(${ACCENT.r}, ${ACCENT.g}, ${ACCENT.b}, 0.55)`;
+        ctx!.fillStyle = `rgba(${cr}, ${cg}, ${cb}, 0.55)`;
         ctx!.fill();
       }
 
@@ -83,9 +100,9 @@ export function TechBackground() {
           const dx = a.x - b.x;
           const dy = a.y - b.y;
           const dist = Math.hypot(dx, dy);
-          if (dist < LINK_DIST) {
-            const alpha = (1 - dist / LINK_DIST) * 0.18;
-            ctx!.strokeStyle = `rgba(${ACCENT.r}, ${ACCENT.g}, ${ACCENT.b}, ${alpha})`;
+          if (dist < linkDist) {
+            const alpha = (1 - dist / linkDist) * 0.18;
+            ctx!.strokeStyle = `rgba(${cr}, ${cg}, ${cb}, ${alpha})`;
             ctx!.lineWidth = 1;
             ctx!.beginPath();
             ctx!.moveTo(a.x, a.y);
@@ -101,7 +118,7 @@ export function TechBackground() {
           const dist = Math.hypot(dx, dy);
           if (dist < MOUSE_DIST) {
             const alpha = (1 - dist / MOUSE_DIST) * 0.4;
-            ctx!.strokeStyle = `rgba(${ACCENT.r}, ${ACCENT.g}, ${ACCENT.b}, ${alpha})`;
+            ctx!.strokeStyle = `rgba(${cr}, ${cg}, ${cb}, ${alpha})`;
             ctx!.lineWidth = 1;
             ctx!.beginPath();
             ctx!.moveTo(a.x, a.y);

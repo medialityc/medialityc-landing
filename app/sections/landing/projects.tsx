@@ -73,6 +73,7 @@ export function ProjectsSection() {
     >
       <div className="container">
         <SectionHeading
+          parallax={0.05}
           eyebrow="Proyectos"
           title={<span id="projects-heading">Casos destacados</span>}
           description="Una selección de trabajos que muestran nuestro enfoque en producto, detalle y rendimiento."

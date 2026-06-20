@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { AnimatedReveal } from "@/components/animated-reveal";
+import { Parallax } from "@/components/parallax";
 
 type SectionHeadingProps = {
   eyebrow: string;
@@ -7,6 +8,8 @@ type SectionHeadingProps = {
   description?: React.ReactNode;
   align?: "left" | "center";
   className?: string;
+  /** Velocidad de parallax al hacer scroll (0 = desactivado). */
+  parallax?: number;
 };
 
 /**
@@ -19,8 +22,9 @@ export function SectionHeading({
   description,
   align = "center",
   className,
+  parallax = 0,
 }: SectionHeadingProps) {
-  return (
+  const inner = (
     <AnimatedReveal
       className={cn(
         "max-w-2xl",
@@ -29,12 +33,7 @@ export function SectionHeading({
       )}
       distance={36}
     >
-      <span
-        className={cn(
-          "eyebrow",
-          align === "center" && "justify-center"
-        )}
-      >
+      <span className={cn("eyebrow", align === "center" && "justify-center")}>
         <span className="size-1.5 rounded-full bg-primary animate-status-pulse" />
         {eyebrow}
       </span>
@@ -48,4 +47,13 @@ export function SectionHeading({
       )}
     </AnimatedReveal>
   );
+
+  if (parallax) {
+    return (
+      <Parallax speed={parallax} className={align === "center" ? "" : "w-full"}>
+        {inner}
+      </Parallax>
+    );
+  }
+  return inner;
 }
