@@ -160,9 +160,14 @@ export function NodeBird() {
     const t = state.clock.elapsedTime;
     const pos = geo.attributes.position.array as Float32Array;
 
-    const scroll =
+    // Progreso de scroll de TODA la página (0..1): el ave acompaña el scroll.
+    const sp =
       typeof window !== "undefined"
-        ? Math.min(window.scrollY / (window.innerHeight || 1), 1)
+        ? (() => {
+            const max =
+              document.documentElement.scrollHeight - window.innerHeight;
+            return max > 0 ? Math.min(window.scrollY / max, 1) : 0;
+          })()
         : 0;
 
     for (let i = 0; i < data.count; i++) {
@@ -170,7 +175,7 @@ export function NodeBird() {
       const bx = base[i3];
       const by = base[i3 + 1];
       const bz = base[i3 + 2];
-      const spread = 1 + scroll * 0.55;
+      const spread = 1 + sp * 0.35;
       pos[i3] = bx * spread;
       pos[i3 + 1] = by * spread;
       pos[i3 + 2] = bz + Math.sin(t * 1.5 + bx * 0.7 + by * 0.5) * 0.18;
@@ -179,18 +184,21 @@ export function NodeBird() {
 
     if (group.current) {
       const p = state.pointer;
-      // Tilt suave para mantener la silueta del logo legible
-      target.current.y = p.x * 0.3 + Math.sin(t * 0.3) * 0.12 + scroll * 0.5;
-      target.current.x = 0.04 - p.y * 0.18 + scroll * 0.25;
+      // Tilt suave (silueta del logo legible) + giro lento ligado al scroll
+      target.current.y = p.x * 0.3 + Math.sin(t * 0.3) * 0.12 + sp * 1.1;
+      target.current.x = 0.04 - p.y * 0.18 + sp * 0.25;
       group.current.rotation.y +=
-        (target.current.y - group.current.rotation.y) * 0.06;
+        (target.current.y - group.current.rotation.y) * 0.05;
       group.current.rotation.x +=
-        (target.current.x - group.current.rotation.x) * 0.06;
-      group.current.position.y = Math.sin(t * 0.7) * 0.05 - scroll * 0.6;
+        (target.current.x - group.current.rotation.x) * 0.05;
+      // Desciende a lo largo de la página y deriva suavemente
+      group.current.position.y = 0.6 + Math.sin(t * 0.7) * 0.05 - sp * 7.5;
+      group.current.position.x = Math.sin(sp * Math.PI) * 0.8;
     }
 
-    const op = Math.max(0, 1 - scroll * 1.1);
-    if (pointsMat.current) pointsMat.current.opacity = 0.95 * op;
+    // Permanece visible toda la página (se atenúa solo un poco hacia el final)
+    const op = 1 - sp * 0.35;
+    if (pointsMat.current) pointsMat.current.opacity = 0.9 * op;
     if (lineMat.current) lineMat.current.opacity = 0.22 * op;
   });
 
