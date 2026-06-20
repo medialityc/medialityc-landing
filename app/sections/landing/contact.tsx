@@ -1,202 +1,198 @@
 "use client";
 
 import type React from "react";
-
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { Mail, Phone, MapPin, Send, CheckCircle2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Mail, Phone, MapPin, Sparkles, Send } from "lucide-react";
-import { useState } from "react";
 import { AnimatedReveal } from "@/components/animated-reveal";
-import { BrandMark } from "../../../components/brand-mark";
+import { SectionHeading } from "@/components/section-heading";
+
+const channels = [
+  {
+    icon: Mail,
+    label: "Email",
+    value: "contacto@medialityc.com",
+    href: "mailto:contacto@medialityc.com",
+  },
+  {
+    icon: Phone,
+    label: "Teléfono",
+    value: "+1 (555) 123-4567",
+    href: "tel:+15551234567",
+  },
+  {
+    icon: MapPin,
+    label: "Ubicación",
+    value: "Ciudad, País",
+  },
+];
 
 export function ContactSection() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
-  });
+  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSending(true);
-    // Simulated async send (replace with real endpoint / action)
+    // Envío simulado (reemplazar por endpoint / server action real)
     await new Promise((r) => setTimeout(r, 900));
-    console.log("[contact] Form submitted:", formData);
     setSending(false);
     setSent(true);
     setFormData({ name: "", email: "", message: "" });
-    setTimeout(() => setSent(false), 4000); // auto hide message
+    setTimeout(() => setSent(false), 4000);
   };
 
   return (
     <section
       id="contacto"
-      className="py-24 md:py-32 relative overflow-hidden"
+      className="relative scroll-mt-24 py-28 md:py-36"
       aria-labelledby="contact-heading"
     >
-      {/* Decorative background layers */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute -inset-[20%] opacity-40 bg-radial from-primary/20 via-primary/5 to-transparent" />
-        <div className="absolute inset-0 bg-linear-to-b from-transparent via-primary/10 to-transparent" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[780px] h-[780px] bg-radial from-primary/15 via-primary/0 to-transparent blur-3xl" />
-      </div>
-      <div className="container px-4 md:px-6 relative">
-        {/* Corner emblem accent */}
-        <div className="absolute -left-10 top-10 opacity-[0.05] hidden lg:block">
-          <BrandMark variant="inline" className="w-40" alt="" />
-        </div>
-        <AnimatedReveal
-          className="text-center space-y-6 mb-14 md:mb-20"
-          delay={0}
-        >
-          <h2
-            id="contact-heading"
-            className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-balance"
-          >
-            Hablemos de tu <span className="text-primary">Proyecto</span>
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-[720px] mx-auto text-pretty">
-            ¿Listo para transformar tu negocio? Completa el formulario o usa un
-            canal directo. Nos comprometemos a responder en menos de 24 horas.
-          </p>
-        </AnimatedReveal>
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1fr,0.85fr] max-w-6xl mx-auto">
-          <AnimatedReveal className="relative group" delay={0.05} distance={42}>
-            <Card className="backdrop-blur-sm bg-background/80 border border-border/60 shadow-sm group">
-              <CardHeader className="relative">
-                <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-primary" /> Envíanos un
-                  mensaje
-                </CardTitle>
-                <CardDescription>
-                  Nos encantará conocer tus objetivos y retos.
-                </CardDescription>
-                <div className="absolute right-4 top-4 text-xs font-mono text-primary/70">
-                  #ContactForm
-                </div>
-              </CardHeader>
-              <CardContent>
-                <form
-                  onSubmit={handleSubmit}
-                  className="space-y-5"
-                  aria-describedby={sent ? "form-success" : undefined}
-                >
-                  <div className="space-y-2">
-                    <Input
-                      placeholder="Tu nombre"
-                      value={formData.name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
-                      required
-                      aria-label="Nombre"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Input
-                      type="email"
-                      placeholder="Tu email"
-                      value={formData.email}
-                      onChange={(e) =>
-                        setFormData({ ...formData, email: e.target.value })
-                      }
-                      required
-                      aria-label="Email"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Textarea
-                      placeholder="Cuéntanos sobre tu proyecto..."
-                      value={formData.message}
-                      onChange={(e) =>
-                        setFormData({ ...formData, message: e.target.value })
-                      }
-                      className="min-h-40"
-                      required
-                      aria-label="Mensaje"
-                    />
-                  </div>
-                  <Button
-                    type="submit"
-                    disabled={sending}
-                    className="w-full relative"
+      <div className="container">
+        <SectionHeading
+          eyebrow="Contacto"
+          title={
+            <span id="contact-heading">
+              Hablemos de tu <span className="text-gradient">proyecto</span>
+            </span>
+          }
+          description="¿Listo para transformar tu negocio? Completa el formulario o usa un canal directo. Respondemos en menos de 24 horas."
+        />
+
+        <div className="mx-auto mt-16 grid max-w-5xl gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+          {/* Formulario */}
+          <AnimatedReveal distance={40}>
+            <form
+              onSubmit={handleSubmit}
+              className="rounded-2xl border border-border/70 bg-card/50 p-6 backdrop-blur-sm md:p-8"
+            >
+              <div className="space-y-5">
+                <div className="space-y-2">
+                  <label
+                    htmlFor="name"
+                    className="text-sm font-medium text-foreground/90"
                   >
-                    <span className={sending ? "opacity-0" : ""}>
-                      Enviar Mensaje
-                    </span>
-                    {sending && (
-                      <span className="absolute inset-0 flex items-center justify-center">
-                        <Send className="h-5 w-5 animate-pulse" />
-                      </span>
-                    )}
-                  </Button>
-                  {sent && (
-                    <div
-                      id="form-success"
-                      className="text-sm text-primary flex items-center gap-2 animate-in fade-in slide-in-from-top-2"
-                      role="status"
-                    >
-                      <Sparkles className="h-4 w-4" /> ¡Mensaje enviado! Te
-                      responderemos pronto.
-                    </div>
+                    Nombre <span className="text-primary">*</span>
+                  </label>
+                  <Input
+                    id="name"
+                    name="name"
+                    placeholder="Tu nombre"
+                    autoComplete="name"
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label
+                    htmlFor="email"
+                    className="text-sm font-medium text-foreground/90"
+                  >
+                    Email <span className="text-primary">*</span>
+                  </label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    placeholder="tu@email.com"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label
+                    htmlFor="message"
+                    className="text-sm font-medium text-foreground/90"
+                  >
+                    Mensaje <span className="text-primary">*</span>
+                  </label>
+                  <Textarea
+                    id="message"
+                    name="message"
+                    placeholder="Cuéntanos sobre tu proyecto..."
+                    className="min-h-36"
+                    value={formData.message}
+                    onChange={(e) =>
+                      setFormData({ ...formData, message: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={sending}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 font-mono text-[12px] font-semibold uppercase tracking-[0.16em] text-primary-foreground transition-all duration-300 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                >
+                  {sending ? (
+                    <Send className="size-4 animate-pulse" />
+                  ) : (
+                    <>
+                      Enviar mensaje
+                      <Send className="size-4" />
+                    </>
                   )}
-                </form>
-              </CardContent>
-            </Card>
-          </AnimatedReveal>
-          <div className="space-y-6">
-            <AnimatedReveal delay={0.1} distance={40}>
-              <Card className="transition group hover:border-primary/50 hover:shadow-[0_0_0_1px_hsl(var(--primary))]">
-                <CardContent className="p-6 flex items-start gap-4">
-                  <div className="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-                    <Mail className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-1">Email</h3>
-                    <p className="text-muted-foreground select-all">
-                      contacto@medialityc.com
+                </button>
+
+                <div aria-live="polite" className="min-h-5">
+                  {sent && (
+                    <p className="flex items-center gap-2 text-sm text-primary">
+                      <CheckCircle2 className="size-4" />
+                      ¡Mensaje enviado! Te responderemos pronto.
                     </p>
+                  )}
+                </div>
+              </div>
+            </form>
+          </AnimatedReveal>
+
+          {/* Canales directos */}
+          <AnimatedReveal delay={0.1} distance={40}>
+            <div className="flex h-full flex-col gap-4">
+              {channels.map((c) => {
+                const Icon = c.icon;
+                const inner = (
+                  <div className="flex items-start gap-4 rounded-2xl border border-border/70 bg-card/40 p-5 backdrop-blur-sm transition-all duration-300 hover:border-primary/40 hover:bg-card/70">
+                    <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary ring-1 ring-primary/20">
+                      <Icon className="size-5" />
+                    </span>
+                    <div>
+                      <h3 className="font-medium">{c.label}</h3>
+                      <p className="text-sm text-muted-foreground">{c.value}</p>
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            </AnimatedReveal>
-            <AnimatedReveal delay={0.18} distance={40}>
-              <Card className="transition group hover:border-primary/50 hover:shadow-[0_0_0_1px_hsl(var(--primary))]">
-                <CardContent className="p-6 flex items-start gap-4">
-                  <div className="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-                    <Phone className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-1">Teléfono</h3>
-                    <p className="text-muted-foreground">+1 (555) 123-4567</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </AnimatedReveal>
-            <AnimatedReveal delay={0.26} distance={40}>
-              <Card className="transition group hover:border-primary/50 hover:shadow-[0_0_0_1px_hsl(var(--primary))]">
-                <CardContent className="p-6 flex items-start gap-4">
-                  <div className="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-                    <MapPin className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-1">Ubicación</h3>
-                    <p className="text-muted-foreground">Ciudad, País</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </AnimatedReveal>
-          </div>
+                );
+                return c.href ? (
+                  <a
+                    key={c.label}
+                    href={c.href}
+                    className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-2xl"
+                  >
+                    {inner}
+                  </a>
+                ) : (
+                  <div key={c.label}>{inner}</div>
+                );
+              })}
+
+              <div className="mt-auto rounded-2xl border border-primary/20 bg-primary/[0.06] p-5">
+                <p className="text-sm leading-relaxed text-foreground/80">
+                  Trabajamos con empresas de cualquier tamaño. Cuéntanos tu reto
+                  y diseñamos la solución a tu medida.
+                </p>
+              </div>
+            </div>
+          </AnimatedReveal>
         </div>
       </div>
     </section>

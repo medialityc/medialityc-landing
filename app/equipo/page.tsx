@@ -17,7 +17,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { GL } from "@/components/gl";
 
 const fallbackImg = "/team/fallback-avatar.svg";
 
@@ -37,12 +36,7 @@ export default function EquipoPage() {
 
   return (
     <>
-      {/* Fondo WebGL detrás del contenido */}
-      <div className="pointer-events-none fixed inset-0 -z-10">
-        <GL />
-      </div>
-
-      <section className="relative z-10 py-24 md:py-32 container">
+      <section className="relative z-10 py-28 md:py-36 container">
         <div className="flex flex-col gap-6 max-w-3xl mb-10">
           <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-balance">
             Todo el equipo
@@ -75,7 +69,7 @@ export default function EquipoPage() {
           {filtrados.map((miembro) => (
             <Card
               key={miembro.id}
-              className="group h-full border-border/60 bg-background/70 backdrop-blur-sm transition-colors hover:border-primary/40 hover:shadow-[0_4px_18px_-4px_hsl(var(--primary)/0.35)]"
+              className="group h-full border-border/60 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/40"
             >
               <CardHeader className="flex-row items-center gap-4">
                 <Avatar className="size-14 ring-2 ring-primary/20 ring-offset-2 ring-offset-background">

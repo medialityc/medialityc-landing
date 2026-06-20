@@ -3,6 +3,7 @@ import { Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Header } from "@/components/header";
+import { TechBackground } from "@/components/tech-background";
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -90,11 +91,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="es">
       <body
         className={`${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
+        <TechBackground />
         <Header />
         {children}
       </body>
