@@ -3,93 +3,123 @@
 import * as THREE from "three";
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
+import { LOGO_MARK_PATHS, LOGO_VIEWBOX } from "./logo-paths";
 
 /**
- * Ave tecnológica construida con nodos + conexiones (acorde a la identidad de
- * marca). Geometría generada proceduralmente: columna central, cabeza/pico,
- * cola y dos alas triangulares en malla. Se anima con un aleteo (los nodos de
- * las puntas se mueven más) y reacciona al puntero y al scroll (rotación,
- * dispersión y desvanecimiento al salir del hero).
+ * Ave de nodos basada en el isotipo real de Medialityc.
+ * Rasteriza los paths del logo (con Path2D) en un canvas offscreen, muestrea
+ * los píxeles de la silueta como nodos y los conecta a sus vecinos más cercanos
+ * (KNN) para formar una "red". Así la forma coincide con el logo. Luego se
+ * anima en 3D (ondas de profundidad), reacciona al puntero y al scroll
+ * (dispersión + desvanecimiento).
  */
 
-const COLOR_BODY = new THREE.Color("#2bd4d8");
-const COLOR_TIP = new THREE.Color("#a6f7ff");
+function buildFromLogo() {
+  if (typeof document === "undefined") return null;
 
-function buildBird() {
-  const positions: number[] = [];
-  const colors: number[] = [];
-  const flaps: number[] = [];
-  const idx: number[] = [];
-  let count = 0;
+  const W = 300;
+  const H = Math.round((W * LOGO_VIEWBOX.h) / LOGO_VIEWBOX.w);
+  const cv = document.createElement("canvas");
+  cv.width = W;
+  cv.height = H;
+  const ctx = cv.getContext("2d");
+  if (!ctx) return null;
 
-  const add = (x: number, y: number, z: number, flap: number) => {
-    const i = count++;
-    positions.push(x, y, z);
-    const c = COLOR_BODY.clone().lerp(COLOR_TIP, flap);
-    colors.push(c.r, c.g, c.b);
-    flaps.push(flap);
-    return i;
-  };
-  const link = (a: number, b: number) => idx.push(a, b);
-
-  // Columna central (cola -> cabeza)
-  const SP = 7;
-  const spine: number[] = [];
-  for (let s = 0; s <= SP; s++) {
-    const ty = s / SP;
-    const y = -1.3 + ty * 2.4;
-    const z = Math.sin(ty * Math.PI) * 0.14;
-    const i = add(0, y, z, 0.05);
-    spine.push(i);
-    if (s > 0) link(spine[s - 1], spine[s]);
-  }
-  const head = spine[SP];
-  const shoulder = spine[Math.round(SP * 0.62)];
-  // Pico hacia adelante
-  const beak = add(0, 1.18, 0.34, 0);
-  link(head, beak);
-
-  // Cola en abanico
-  for (const side of [-1, 1]) {
-    const t1 = add(side * 0.18, -1.55, 0, 0.18);
-    const t2 = add(side * 0.34, -1.78, -0.06, 0.28);
-    link(spine[0], t1);
-    link(t1, t2);
-  }
-
-  // Alas (malla triangular que se eleva hacia afuera)
-  const NS = 9; // segmentos a lo largo del ala
-  const NF = 4; // profundidad de "plumas"
-  for (const side of [-1, 1]) {
-    const grid: number[][] = [];
-    for (let i = 1; i <= NS; i++) {
-      const sp = i / NS;
-      grid[i] = [];
-      for (let j = 0; j <= NF; j++) {
-        const fd = j / NF;
-        const x = side * (0.15 + sp * 2.35);
-        const y = 0.55 + sp * 0.55 - fd * (0.25 + sp * 0.85);
-        const z = Math.sin(sp * 2.0) * 0.2 - fd * 0.05;
-        const flap = Math.min(1, sp * 1.0 + fd * 0.08);
-        const id = add(x, y, z, flap);
-        grid[i][j] = id;
-        if (i > 1) link(grid[i - 1][j], grid[i][j]);
-        if (j > 0) link(grid[i][j - 1], grid[i][j]);
-      }
+  ctx.fillStyle = "#fff";
+  ctx.save();
+  ctx.scale(W / LOGO_VIEWBOX.w, H / LOGO_VIEWBOX.h);
+  for (const d of LOGO_MARK_PATHS) {
+    try {
+      ctx.fill(new Path2D(d));
+    } catch {
+      /* Path2D no soportado: se ignora */
     }
-    link(shoulder, grid[1][0]);
-    link(spine[Math.round(SP * 0.5)], grid[1][1]);
-    // Conexiones cruzadas para reforzar el aspecto de "red"
-    for (let i = 2; i <= NS; i += 2) link(grid[i][0], grid[i - 1][Math.min(NF, 2)]);
+  }
+  ctx.restore();
+
+  const data = ctx.getImageData(0, 0, W, H).data;
+  const raw: [number, number][] = [];
+  const step = 2;
+  for (let y = 0; y < H; y += step) {
+    for (let x = 0; x < W; x += step) {
+      if (data[(y * W + x) * 4 + 3] > 50) raw.push([x, y]);
+    }
+  }
+  if (raw.length < 20) return null;
+
+  // Submuestreo uniforme hasta el número objetivo de nodos
+  const TARGET = 360;
+  let pts = raw;
+  if (raw.length > TARGET) {
+    pts = [];
+    const stride = raw.length / TARGET;
+    for (let i = 0; i < TARGET; i++) pts.push(raw[Math.floor(i * stride)]);
+  }
+  const n = pts.length;
+
+  // Caja envolvente para centrar/normalizar a unidades de mundo
+  let minX = Infinity,
+    maxX = -Infinity,
+    minY = Infinity,
+    maxY = -Infinity;
+  for (const [x, y] of pts) {
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+  }
+  const cx = (minX + maxX) / 2;
+  const cy = (minY + maxY) / 2;
+  const WORLD = 4.8;
+  const s = WORLD / (maxX - minX);
+
+  const positions = new Float32Array(n * 3);
+  const colors = new Float32Array(n * 3);
+  const cIndigo = new THREE.Color("#6b7cf0");
+  const cTeal = new THREE.Color("#2dd4bf");
+  const cAqua = new THREE.Color("#9af3ff");
+
+  for (let i = 0; i < n; i++) {
+    const [x, y] = pts[i];
+    positions[i * 3] = (x - cx) * s;
+    positions[i * 3 + 1] = -(y - cy) * s;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 0.25;
+
+    const t = (x - minX) / (maxX - minX);
+    const col =
+      t < 0.5
+        ? cIndigo.clone().lerp(cTeal, t / 0.5)
+        : cTeal.clone().lerp(cAqua, (t - 0.5) / 0.5);
+    colors[i * 3] = col.r;
+    colors[i * 3 + 1] = col.g;
+    colors[i * 3 + 2] = col.b;
   }
 
-  return {
-    positions: new Float32Array(positions),
-    colors: new Float32Array(colors),
-    flaps: new Float32Array(flaps),
-    index: new Uint16Array(idx),
-    count,
-  };
+  // Conexiones: cada nodo con sus K vecinos más cercanos (red sin huecos)
+  const K = 3;
+  const seen = new Set<number>();
+  const idx: number[] = [];
+  for (let i = 0; i < n; i++) {
+    const dists: { j: number; d: number }[] = [];
+    const ax = pts[i][0];
+    const ay = pts[i][1];
+    for (let j = 0; j < n; j++) {
+      if (j === i) continue;
+      const dx = ax - pts[j][0];
+      const dy = ay - pts[j][1];
+      dists.push({ j, d: dx * dx + dy * dy });
+    }
+    dists.sort((a, b) => a.d - b.d);
+    for (let k = 0; k < K && k < dists.length; k++) {
+      const j = dists[k].j;
+      const key = i < j ? i * n + j : j * n + i;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      idx.push(i, j);
+    }
+  }
+
+  return { positions, colors, index: new Uint16Array(idx), count: n };
 }
 
 function makeSprite() {
@@ -102,8 +132,7 @@ function makeSprite() {
   grd.addColorStop(1, "rgba(255,255,255,0)");
   g.fillStyle = grd;
   g.fillRect(0, 0, 64, 64);
-  const tex = new THREE.CanvasTexture(c);
-  return tex;
+  return new THREE.CanvasTexture(c);
 }
 
 export function NodeBird() {
@@ -111,11 +140,12 @@ export function NodeBird() {
   const pointsMat = useRef<THREE.PointsMaterial>(null);
   const lineMat = useRef<THREE.LineBasicMaterial>(null);
 
-  const data = useMemo(() => buildBird(), []);
-  const base = useMemo(() => data.positions.slice(), [data]);
+  const data = useMemo(() => buildFromLogo(), []);
+  const base = useMemo(() => (data ? data.positions.slice() : null), [data]);
   const sprite = useMemo(() => makeSprite(), []);
 
   const geo = useMemo(() => {
+    if (!data) return null;
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.BufferAttribute(data.positions, 3));
     g.setAttribute("color", new THREE.BufferAttribute(data.colors, 3));
@@ -126,10 +156,10 @@ export function NodeBird() {
   const target = useRef({ x: 0, y: 0 });
 
   useFrame((state) => {
+    if (!geo || !data || !base) return;
     const t = state.clock.elapsedTime;
     const pos = geo.attributes.position.array as Float32Array;
 
-    // Progreso de salida del hero (0 arriba, 1 tras un viewport de scroll)
     const scroll =
       typeof window !== "undefined"
         ? Math.min(window.scrollY / (window.innerHeight || 1), 1)
@@ -137,48 +167,44 @@ export function NodeBird() {
 
     for (let i = 0; i < data.count; i++) {
       const i3 = i * 3;
-      const fl = data.flaps[i];
       const bx = base[i3];
       const by = base[i3 + 1];
       const bz = base[i3 + 2];
-      const flap = Math.sin(t * 2.2 + bx * 1.2) * 0.3 * fl;
-      const spread = 1 + scroll * 0.7 * fl; // dispersión cinematográfica
+      const spread = 1 + scroll * 0.55;
       pos[i3] = bx * spread;
-      pos[i3 + 1] = by + flap + Math.sin(t * 1.2) * 0.03;
-      pos[i3 + 2] = bz + flap * 0.6;
+      pos[i3 + 1] = by * spread;
+      pos[i3 + 2] = bz + Math.sin(t * 1.5 + bx * 0.7 + by * 0.5) * 0.18;
     }
     geo.attributes.position.needsUpdate = true;
 
     if (group.current) {
       const p = state.pointer;
-      // De frente (alas extendidas, forma de ave reconocible) con balanceo
-      // suave + parallax de puntero. El scroll gira y echa atrás de forma
-      // cinematográfica, sin perder la silueta.
-      target.current.y = p.x * 0.45 + Math.sin(t * 0.25) * 0.22 + scroll * 0.9;
-      target.current.x = 0.16 - p.y * 0.25 + scroll * 0.5;
+      // Tilt suave para mantener la silueta del logo legible
+      target.current.y = p.x * 0.3 + Math.sin(t * 0.3) * 0.12 + scroll * 0.5;
+      target.current.x = 0.04 - p.y * 0.18 + scroll * 0.25;
       group.current.rotation.y +=
         (target.current.y - group.current.rotation.y) * 0.06;
       group.current.rotation.x +=
         (target.current.x - group.current.rotation.x) * 0.06;
-      const sc = 0.72 * (1 + scroll * 0.3);
-      group.current.scale.setScalar(sc);
-      group.current.position.y = Math.sin(t * 0.8) * 0.05 - scroll * 0.6;
+      group.current.position.y = Math.sin(t * 0.7) * 0.05 - scroll * 0.6;
     }
 
     const op = Math.max(0, 1 - scroll * 1.1);
     if (pointsMat.current) pointsMat.current.opacity = 0.95 * op;
-    if (lineMat.current) lineMat.current.opacity = 0.3 * op;
+    if (lineMat.current) lineMat.current.opacity = 0.22 * op;
   });
 
+  if (!geo) return null;
+
   return (
-    <group ref={group} rotation={[0.16, 0, 0]} scale={0.72}>
+    <group ref={group} scale={0.82}>
       {/* @ts-ignore intrinsics R3F */}
       <points geometry={geo}>
         {/* @ts-ignore */}
         <pointsMaterial
           ref={pointsMat}
           vertexColors
-          size={0.08}
+          size={0.06}
           sizeAttenuation
           map={sprite}
           alphaTest={0.01}
@@ -197,7 +223,7 @@ export function NodeBird() {
           transparent
           depthWrite={false}
           blending={THREE.AdditiveBlending}
-          opacity={0.3}
+          opacity={0.22}
         />
       </lineSegments>
     </group>
