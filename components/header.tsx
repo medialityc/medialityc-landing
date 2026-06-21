@@ -6,10 +6,10 @@ import { Logo } from "./logo";
 import { ColoredLogo } from "./colored-logo";
 
 const sections = [
+  { id: "sedes", label: "Sedes" },
   { id: "services", label: "Servicios" },
   { id: "beneficios", label: "Beneficios" },
   { id: "proyectos", label: "Proyectos" },
-  { id: "sedes", label: "Sedes" },
   { id: "equipo", label: "Equipo" },
   { id: "testimonios", label: "Testimonios" },
   { id: "contacto", label: "Contacto" },
