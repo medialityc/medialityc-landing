@@ -1,204 +1,28 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { Canvas } from "@react-three/fiber";
+import { useEffect, useState } from "react";
+import { ParticleField } from "@/components/particle-field";
 
 /**
- * TechBackground
- * Fondo decorativo ligero y performante que reemplaza la simulación GPGPU de
- * ~262k partículas. Combina tres capas baratas para la GPU/CPU:
- *  1. Aurora: blobs de gradiente radial animados solo con `transform` (CSS).
- *  2. Grid: patrón de puntos con máscara de desvanecimiento (CSS puro, 0 coste runtime).
- *  3. Constelación: red de nodos en un canvas 2D, con número de nodos capado,
- *     DPR limitado, y pausa cuando la pestaña está oculta o el usuario pidió
- *     reducir el movimiento.
+ * Fondo global: campo de partículas denso (estilo "nube" del fondo original)
+ * renderizado en GPU vía R3F, performante. Lienzo fijo a pantalla completa,
+ * detrás de todo el contenido. Monta solo en cliente, pausa cuando la pestaña
+ * está oculta y respeta prefers-reduced-motion.
  */
 export function TechBackground() {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [reduced, setReduced] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d", { alpha: true });
-    if (!ctx) return;
-
-    const prefersReduced = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-
-    // DPR limitado: nitidez suficiente sin penalizar GPUs integradas.
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-
-    let width = 0;
-    let height = 0;
-    let nodes: { x: number; y: number; vx: number; vy: number }[] = [];
-
-    const ACCENT = { r: 117, g: 233, b: 240 }; // brand aqua (#75e9f0)
-    const ACCENT2 = { r: 129, g: 140, b: 248 }; // indigo (#818cf8) al final del scroll
-    const LINK_DIST = 140; // distancia máx. para dibujar enlaces
-    const MOUSE_DIST = 170;
-    const mouse = { x: -9999, y: -9999, active: false };
-    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-
-    function resize() {
-      // Fallback a las dimensiones de la ventana si el layout aún no reporta
-      // tamaño (p. ej. durante la hidratación).
-      width = canvas!.clientWidth || window.innerWidth;
-      height = canvas!.clientHeight || window.innerHeight;
-      canvas!.width = Math.floor(width * dpr);
-      canvas!.height = Math.floor(height * dpr);
-      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-      // Densidad proporcional al área, con tope para mantener O(n^2) barato.
-      const target = Math.min(90, Math.floor((width * height) / 16000));
-      nodes = Array.from({ length: target }, () => ({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.22,
-        vy: (Math.random() - 0.5) * 0.22,
-      }));
-    }
-
-    function draw() {
-      ctx!.clearRect(0, 0, width, height);
-
-      // Progreso de scroll de toda la página (0..1) para la reactividad.
-      const maxScroll =
-        document.documentElement.scrollHeight - window.innerHeight;
-      const sp = maxScroll > 0 ? Math.min(window.scrollY / maxScroll, 1) : 0;
-      if (!prefersReduced) {
-        document.documentElement.style.setProperty("--sp", sp.toFixed(3));
-      }
-
-      // El scroll desplaza el tono (aqua -> indigo), acelera y alarga enlaces.
-      const cr = Math.round(lerp(ACCENT.r, ACCENT2.r, sp));
-      const cg = Math.round(lerp(ACCENT.g, ACCENT2.g, sp));
-      const cb = Math.round(lerp(ACCENT.b, ACCENT2.b, sp));
-      const speedFactor = 1 + sp * 1.6;
-      const linkDist = LINK_DIST * (1 + sp * 0.35);
-
-      // Mover y dibujar nodos
-      for (let i = 0; i < nodes.length; i++) {
-        const n = nodes[i];
-        if (!prefersReduced) {
-          n.x += n.vx * speedFactor;
-          n.y += n.vy * speedFactor;
-          if (n.x < 0 || n.x > width) n.vx *= -1;
-          if (n.y < 0 || n.y > height) n.vy *= -1;
-        }
-
-        ctx!.beginPath();
-        ctx!.arc(n.x, n.y, 1.4, 0, Math.PI * 2);
-        ctx!.fillStyle = `rgba(${cr}, ${cg}, ${cb}, 0.55)`;
-        ctx!.fill();
-      }
-
-      // Enlaces entre nodos cercanos
-      for (let i = 0; i < nodes.length; i++) {
-        const a = nodes[i];
-        for (let j = i + 1; j < nodes.length; j++) {
-          const b = nodes[j];
-          const dx = a.x - b.x;
-          const dy = a.y - b.y;
-          const dist = Math.hypot(dx, dy);
-          if (dist < linkDist) {
-            const alpha = (1 - dist / linkDist) * 0.18;
-            ctx!.strokeStyle = `rgba(${cr}, ${cg}, ${cb}, ${alpha})`;
-            ctx!.lineWidth = 1;
-            ctx!.beginPath();
-            ctx!.moveTo(a.x, a.y);
-            ctx!.lineTo(b.x, b.y);
-            ctx!.stroke();
-          }
-        }
-
-        // Enlace sutil hacia el cursor (interacción "tech")
-        if (mouse.active) {
-          const dx = a.x - mouse.x;
-          const dy = a.y - mouse.y;
-          const dist = Math.hypot(dx, dy);
-          if (dist < MOUSE_DIST) {
-            const alpha = (1 - dist / MOUSE_DIST) * 0.4;
-            ctx!.strokeStyle = `rgba(${cr}, ${cg}, ${cb}, ${alpha})`;
-            ctx!.lineWidth = 1;
-            ctx!.beginPath();
-            ctx!.moveTo(a.x, a.y);
-            ctx!.lineTo(mouse.x, mouse.y);
-            ctx!.stroke();
-          }
-        }
-      }
-    }
-
-    let raf = 0;
-    let running = true;
-    const loop = () => {
-      if (!running) return;
-      draw();
-      raf = requestAnimationFrame(loop);
-    };
-
-    const onVisibility = () => {
-      if (document.hidden) {
-        running = false;
-        cancelAnimationFrame(raf);
-      } else if (!running) {
-        running = true;
-        loop();
-      }
-    };
-
-    const onPointerMove = (e: PointerEvent) => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-      mouse.active = true;
-    };
-    const onPointerLeave = () => {
-      mouse.active = false;
-    };
-
-    let resizeTimer = 0;
-    const onResize = () => {
-      window.clearTimeout(resizeTimer);
-      resizeTimer = window.setTimeout(() => {
-        resize();
-        if (prefersReduced) draw();
-      }, 150);
-    };
-
-    // Medición inmediata (con fallback) + re-medición tras el layout + RO +
-    // listener de resize. Cubre hidratación, StrictMode y cambios de viewport.
-    resize();
-    const rafResize = requestAnimationFrame(() => {
-      resize();
-      if (prefersReduced) draw();
-    });
-    const ro = new ResizeObserver(() => {
-      resize();
-      if (prefersReduced) draw();
-    });
-    ro.observe(canvas);
-    window.addEventListener("resize", onResize);
-
-    if (prefersReduced) {
-      draw();
-    } else {
-      loop();
-      window.addEventListener("pointermove", onPointerMove, { passive: true });
-      window.addEventListener("pointerout", onPointerLeave, { passive: true });
-      document.addEventListener("visibilitychange", onVisibility);
-    }
-
-    return () => {
-      running = false;
-      cancelAnimationFrame(raf);
-      cancelAnimationFrame(rafResize);
-      window.clearTimeout(resizeTimer);
-      ro.disconnect();
-      window.removeEventListener("resize", onResize);
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerout", onPointerLeave);
-      document.removeEventListener("visibilitychange", onVisibility);
-    };
+    setMounted(true);
+    setReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    setIsMobile(window.matchMedia("(max-width: 640px)").matches);
+    const onVis = () => setHidden(document.hidden);
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
   }, []);
 
   return (
@@ -206,20 +30,18 @@ export function TechBackground() {
       aria-hidden
       className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-background"
     >
-      {/* Capa 1 — Aurora (gradientes que derivan suavemente) */}
-      <div className="tech-aurora absolute -inset-[20%]">
-        <span className="tech-aurora__blob tech-aurora__blob--1" />
-        <span className="tech-aurora__blob tech-aurora__blob--2" />
-        <span className="tech-aurora__blob tech-aurora__blob--3" />
-      </div>
+      {mounted && (
+        <Canvas
+          dpr={[1, 1.5]}
+          camera={{ position: [0, 0, 6], fov: 50 }}
+          gl={{ antialias: false, alpha: true }}
+          frameloop={reduced || hidden ? "demand" : "always"}
+        >
+          <ParticleField count={isMobile ? 11000 : 26000} />
+        </Canvas>
+      )}
 
-      {/* Capa 2 — Grid de puntos con desvanecimiento radial */}
-      <div className="tech-grid absolute inset-0" />
-
-      {/* Capa 3 — Constelación en canvas */}
-      <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
-
-      {/* Viñeta para foco en el contenido */}
+      {/* Viñeta para enfocar el contenido (se intensifica con el scroll vía --sp) */}
       <div className="tech-vignette absolute inset-0" />
     </div>
   );

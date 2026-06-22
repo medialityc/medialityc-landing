@@ -7,12 +7,10 @@ import { ProjectsSection } from "@/app/sections/landing/projects";
 import { ServicesSection } from "@/app/sections/landing/services";
 import { TestimonialsSection } from "@/app/sections/landing/testimonials";
 import { Footer } from "@/components/footer";
-import { BirdBackground } from "@/components/bird-background";
 
 export default function Home() {
   return (
     <main>
-      <BirdBackground />
       <Hero />
       <LocationsSection />
       <ServicesSection />
