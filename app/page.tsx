@@ -1,6 +1,7 @@
 import { BenefitsSection } from "@/app/sections/landing/benefits";
 import { ContactSection } from "@/app/sections/landing/contact";
 import { Hero } from "@/app/sections/landing/hero";
+import { LocationsSection } from "@/app/sections/landing/locations";
 import { TeamSection } from "@/app/sections/landing/team";
 import { ProjectsSection } from "@/app/sections/landing/projects";
 import { ServicesSection } from "@/app/sections/landing/services";
@@ -13,6 +14,7 @@ export default function Home() {
     <main>
       <BirdBackground />
       <Hero />
+      <LocationsSection />
       <ServicesSection />
       <BenefitsSection />
       <ProjectsSection />

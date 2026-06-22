@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { ColoredLogo } from "./colored-logo";
 
 const sections = [
+  { id: "sedes", label: "Sedes" },
   { id: "services", label: "Servicios" },
   { id: "beneficios", label: "Beneficios" },
   { id: "proyectos", label: "Proyectos" },
