@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { MapPin, Globe2, Plus, Minus, Maximize2 } from "lucide-react";
+import { MapPin, Plus, Minus, Maximize2 } from "lucide-react";
 import { AnimatedReveal } from "@/components/animated-reveal";
-import { BrandMark } from "../../../components/brand-mark";
+import { SectionHeading } from "@/components/section-heading";
 import { cn } from "@/lib/utils";
 import { WORLD_PATH, WORLD_VIEWBOX, project } from "@/lib/world-map-data";
 
@@ -140,35 +140,19 @@ export function LocationsSection() {
   return (
     <section
       id="sedes"
-      className="relative mx-auto max-w-7xl px-4 py-28 md:py-36 overflow-hidden"
+      className="relative scroll-mt-24 py-28 md:py-36"
       aria-labelledby="locations-heading"
     >
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,hsl(var(--primary)/0.07),transparent_70%)]" />
+      <div className="container">
+        <SectionHeading
+          parallax={0.05}
+          eyebrow="Presencia global"
+          title={<span id="locations-heading">Nuestras sedes en el mundo</span>}
+          description="Conectamos talento y tecnología a través de continentes. Arrastra para moverte, usa la rueda o los botones para hacer zoom, y toca cada punto para ver dónde estamos."
+        />
 
-      <AnimatedReveal as="div" className="mx-auto mb-12 max-w-2xl text-center" distance={40}>
-        <div className="flex items-center justify-center gap-2 text-primary/80 mb-4">
-          <Globe2 className="h-5 w-5" />
-          <span className="font-mono text-xs uppercase tracking-wider">
-            Presencia global
-          </span>
-        </div>
-        <h2
-          id="locations-heading"
-          className="text-4xl md:text-5xl font-sentient leading-tight"
-        >
-          Nuestras sedes en el mundo
-        </h2>
-        <p className="text-muted-foreground mt-6 text-sm md:text-base">
-          Conectamos talento y tecnología a través de continentes. Arrastra para
-          moverte, usa la rueda o los botones para acercar y aleja, y toca cada
-          punto para conocer dónde estamos.
-        </p>
-      </AnimatedReveal>
-
-      <BrandMark variant="divider" />
-
-      {/* Map */}
-      <AnimatedReveal distance={50}>
+        {/* Mapa */}
+        <AnimatedReveal distance={50} className="mt-14">
         <div
           ref={containerRef}
           onPointerDown={onPointerDown}
@@ -176,7 +160,7 @@ export function LocationsSection() {
           onPointerUp={endDrag}
           onPointerLeave={endDrag}
           className={cn(
-            "relative w-full aspect-[16/10] md:aspect-[2/1] rounded-2xl border border-border/50 bg-background/40 backdrop-blur-sm overflow-hidden touch-none select-none",
+            "relative w-full aspect-[16/10] md:aspect-[2/1] rounded-2xl border border-border/70 bg-card/40 backdrop-blur-sm overflow-hidden touch-none select-none",
             dragging ? "cursor-grabbing" : "cursor-grab"
           )}
         >
@@ -311,7 +295,7 @@ export function LocationsSection() {
                     "flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-all duration-300",
                     isActive
                       ? "border-primary/50 bg-primary/10 shadow-[0_0_0_1px_color-mix(in_oklab,var(--primary)_30%,transparent)]"
-                      : "border-border/50 bg-background/40 hover:border-primary/30 hover:bg-primary/5"
+                      : "border-border/70 bg-card/40 hover:border-primary/40 hover:bg-card/70"
                   )}
                 >
                   <span
@@ -341,6 +325,7 @@ export function LocationsSection() {
           })}
         </ul>
       </AnimatedReveal>
+      </div>
     </section>
   );
 }
