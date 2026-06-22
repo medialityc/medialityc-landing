@@ -81,8 +81,8 @@ export const Header = () => {
       className={[
         "fixed left-0 top-0 z-50 w-full transition-all duration-300",
         scrolled
-          ? "border-b border-border/60 bg-background/80 py-3 backdrop-blur-xl"
-          : "border-b border-transparent bg-transparent py-5",
+          ? "border-b border-border/60 bg-background/80 py-2 backdrop-blur-xl"
+          : "border-b border-transparent bg-transparent py-3.5",
       ].join(" ")}
     >
       {/* Barra de progreso de scroll */}
@@ -104,8 +104,8 @@ export const Header = () => {
         >
           <ColoredLogo
             className={[
-              "transition-all duration-500 ease-out",
-              scrolled ? "w-[120px] md:w-[130px]" : "w-[140px] md:w-[160px]",
+              "w-auto transition-all duration-500 ease-out",
+              scrolled ? "h-9 md:h-10" : "h-12 md:h-14",
             ].join(" ")}
           />
         </Link>
