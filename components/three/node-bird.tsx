@@ -73,53 +73,130 @@ function buildFromLogo() {
   const WORLD = 4.8;
   const s = WORLD / (maxX - minX);
 
-  const positions = new Float32Array(n * 3);
-  const colors = new Float32Array(n * 3);
   const cIndigo = new THREE.Color("#6b7cf0");
   const cTeal = new THREE.Color("#2dd4bf");
   const cAqua = new THREE.Color("#9af3ff");
 
+  // Nodos en coordenadas de mundo (arrays dinámicos para poder añadir patas)
+  const P: number[][] = [];
+  const C: number[][] = [];
+  const pushNode = (x: number, y: number, z: number, col: THREE.Color) => {
+    P.push([x, y, z]);
+    C.push([col.r, col.g, col.b]);
+    return P.length - 1;
+  };
+
   for (let i = 0; i < n; i++) {
     const [x, y] = pts[i];
-    positions[i * 3] = (x - cx) * s;
-    positions[i * 3 + 1] = -(y - cy) * s;
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 0.25;
-
     const t = (x - minX) / (maxX - minX);
     const col =
       t < 0.5
         ? cIndigo.clone().lerp(cTeal, t / 0.5)
         : cTeal.clone().lerp(cAqua, (t - 0.5) / 0.5);
-    colors[i * 3] = col.r;
-    colors[i * 3 + 1] = col.g;
-    colors[i * 3 + 2] = col.b;
+    pushNode((x - cx) * s, -(y - cy) * s, (Math.random() - 0.5) * 0.25, col);
   }
+  const logoCount = P.length;
 
-  // Conexiones: cada nodo con sus K vecinos más cercanos (red sin huecos)
+  // Conexiones del cuerpo: cada nodo con sus K vecinos más cercanos
   const K = 3;
   const seen = new Set<number>();
   const idx: number[] = [];
-  for (let i = 0; i < n; i++) {
+  const addEdge = (a: number, b: number) => {
+    if (a === b) return;
+    const key = a < b ? a * 100000 + b : b * 100000 + a;
+    if (seen.has(key)) return;
+    seen.add(key);
+    idx.push(a, b);
+  };
+  for (let i = 0; i < logoCount; i++) {
     const dists: { j: number; d: number }[] = [];
-    const ax = pts[i][0];
-    const ay = pts[i][1];
-    for (let j = 0; j < n; j++) {
+    for (let j = 0; j < logoCount; j++) {
       if (j === i) continue;
-      const dx = ax - pts[j][0];
-      const dy = ay - pts[j][1];
+      const dx = P[i][0] - P[j][0];
+      const dy = P[i][1] - P[j][1];
       dists.push({ j, d: dx * dx + dy * dy });
     }
     dists.sort((a, b) => a.d - b.d);
-    for (let k = 0; k < K && k < dists.length; k++) {
-      const j = dists[k].j;
-      const key = i < j ? i * n + j : j * n + i;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      idx.push(i, j);
+    for (let k = 0; k < K && k < dists.length; k++) addEdge(i, dists[k].j);
+  }
+
+  // ---- Patas (no existen en el logo: se añaden proceduralmente) ----
+  let wMinY = Infinity,
+    wMaxY = -Infinity,
+    wMinX = Infinity,
+    wMaxX = -Infinity;
+  for (let i = 0; i < logoCount; i++) {
+    const x = P[i][0];
+    const y = P[i][1];
+    if (y < wMinY) wMinY = y;
+    if (y > wMaxY) wMaxY = y;
+    if (x < wMinX) wMinX = x;
+    if (x > wMaxX) wMaxX = x;
+  }
+  const cX = (wMinX + wMaxX) / 2;
+
+  const nearestLogo = (x: number, y: number) => {
+    let best = 0;
+    let bd = Infinity;
+    for (let i = 0; i < logoCount; i++) {
+      const dx = P[i][0] - x;
+      const dy = P[i][1] - y;
+      const d = dx * dx + dy * dy;
+      if (d < bd) {
+        bd = d;
+        best = i;
+      }
+    }
+    return best;
+  };
+
+  for (const side of [-1, 1]) {
+    const baseX = cX + side * 0.4;
+    const topY = wMinY + 0.55; // se ancla algo por encima del borde inferior
+    // Cadena de la pata (muslo -> rodilla -> tobillo) hacia abajo
+    const chain: [number, number][] = [
+      [baseX, topY],
+      [baseX + side * 0.06, topY - 0.7],
+      [baseX + side * 0.14, topY - 1.35],
+    ];
+    let prev = -1;
+    let first = -1;
+    chain.forEach((c, i) => {
+      const id = pushNode(c[0], c[1], (Math.random() - 0.5) * 0.12, cAqua);
+      if (i === 0) first = id;
+      if (prev !== -1) addEdge(prev, id);
+      prev = id;
+    });
+    // Ancla la parte alta de la pata al cuerpo
+    addEdge(first, nearestLogo(chain[0][0], chain[0][1]));
+
+    // Dedos / garras desde el tobillo
+    const ankle = chain[chain.length - 1];
+    const toes: [number, number, number][] = [
+      [side * 0.02, -0.16, 0.18],
+      [side * 0.2, -0.18, 0],
+      [side * -0.08, -0.16, -0.18],
+    ];
+    for (const [tx, ty, tz] of toes) {
+      const id = pushNode(ankle[0] + tx, ankle[1] + ty, tz, cAqua);
+      addEdge(prev, id);
     }
   }
 
-  return { positions, colors, index: new Uint16Array(idx), count: n };
+  // Volcado a typed arrays
+  const total = P.length;
+  const positions = new Float32Array(total * 3);
+  const colors = new Float32Array(total * 3);
+  for (let i = 0; i < total; i++) {
+    positions[i * 3] = P[i][0];
+    positions[i * 3 + 1] = P[i][1];
+    positions[i * 3 + 2] = P[i][2];
+    colors[i * 3] = C[i][0];
+    colors[i * 3 + 1] = C[i][1];
+    colors[i * 3 + 2] = C[i][2];
+  }
+
+  return { positions, colors, index: new Uint16Array(idx), count: total };
 }
 
 function makeSprite() {
